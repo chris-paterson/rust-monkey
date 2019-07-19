@@ -24,3 +24,23 @@ pub enum Token {
     Function,
     Let,
 }
+
+impl Token {
+    pub fn lookup_ident(ident: &str) -> Token {
+        match ident {
+            "fn" => Token::Function,
+            "let" => Token::Let,
+            _ => Token::Ident(ident.to_string()),
+        }
+    }
+}
+
+impl std::fmt::Display for Token {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match &self {
+            Token::Ident(literal) => write!(f, "Ident({})", literal),
+            Token::Int(literal) => write!(f, "Int({})", literal),
+            _ => write!(f, "\"{:?})\"", &self.to_string())
+        }
+    }
+}
