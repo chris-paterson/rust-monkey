@@ -35,12 +35,32 @@ impl<'a> Lexer<'a> {
         self.skip_whitespace();
 
         let token = match self.ch {
-            '=' => Token::Assign,
+            '=' => {
+                if self.peek_char() == '=' {
+                    self.read_char();
+                    Token::Eq
+                } else {
+                    Token::Assign
+                }
+            }
+            '+' => Token::Plus,
+            '-' => Token::Minus,
+            '!' => {
+                if self.peek_char() == '=' {
+                    self.read_char();
+                    Token::NotEq
+                } else {
+                    Token::Bang
+                }
+            }
+            '/' => Token::Slash,
+            '*' => Token::Asterisk,
+            '<' => Token::Lt,
+            '>' => Token::Gt,
             ';' => Token::Semicolon,
+            ',' => Token::Comma,
             '(' => Token::LParen,
             ')' => Token::RParen,
-            ',' => Token::Comma,
-            '+' => Token::Plus,
             '{' => Token::LBrace,
             '}' => Token::RBrace,
             '0' => Token::EOF,
@@ -63,6 +83,14 @@ impl<'a> Lexer<'a> {
     fn skip_whitespace(&mut self) {
         while self.ch.is_whitespace() {
             self.read_char();
+        }
+    }
+
+    fn peek_char(&mut self) -> char {
+        if self.read_position >= self.input.len() {
+            '0'
+        } else {
+            self.input.chars().nth(self.read_position).unwrap()
         }
     }
 
@@ -97,6 +125,17 @@ let ten = 10;
      x + y;
 };
 let result = add(five, ten);
+!-/*5;
+5 < 10 > 5;
+
+if (5 < 10) {
+       return true;
+   } else {
+       return false;
+}
+
+10 == 10;
+10 != 9;
 ";
 
         let expected = vec![
@@ -136,7 +175,43 @@ let result = add(five, ten);
             Token::Ident("ten".to_string()),
             Token::RParen,
             Token::Semicolon,
-            Token::EOF,
+            Token::Bang,
+            Token::Minus,
+            Token::Slash,
+            Token::Asterisk,
+            Token::Int("5".to_string()),
+            Token::Semicolon,
+            Token::Int("5".to_string()),
+            Token::Lt,
+            Token::Int("10".to_string()),
+            Token::Gt,
+            Token::Int("5".to_string()),
+            Token::Semicolon,
+            Token::If,
+            Token::LParen,
+            Token::Int("5".to_string()),
+            Token::Lt,
+            Token::Int("10".to_string()),
+            Token::RParen,
+            Token::LBrace,
+            Token::Return,
+            Token::Bool(true),
+            Token::Semicolon,
+            Token::RBrace,
+            Token::Else,
+            Token::LBrace,
+            Token::Return,
+            Token::Bool(false),
+            Token::Semicolon,
+            Token::RBrace,
+            Token::Int("10".to_string()),
+            Token::Eq,
+            Token::Int("10".to_string()),
+            Token::Semicolon,
+            Token::Int("10".to_string()),
+            Token::NotEq,
+            Token::Int("9".to_string()),
+            Token::Semicolon,
         ];
 
         let mut lexer = Lexer::new(input);

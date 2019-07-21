@@ -10,6 +10,16 @@ pub enum Token {
     // Operators.
     Assign,
     Plus,
+    Minus,
+    Bang,
+    Asterisk,
+    Slash,
+
+    Eq,
+    NotEq,
+
+    Lt,
+    Gt,
 
     // Delimeters.
     Comma,
@@ -23,6 +33,10 @@ pub enum Token {
     // Keywords.
     Function,
     Let,
+    Bool(bool),
+    If,
+    Else,
+    Return,
 }
 
 impl Token {
@@ -30,6 +44,11 @@ impl Token {
         match ident {
             "fn" => Token::Function,
             "let" => Token::Let,
+            "true" => Token::Bool(true),
+            "false" => Token::Bool(false),
+            "if" => Token::If,
+            "else" => Token::Else,
+            "return" => Token::Return,
             _ => Token::Ident(ident.to_string()),
         }
     }
@@ -40,7 +59,7 @@ impl std::fmt::Display for Token {
         match &self {
             Token::Ident(literal) => write!(f, "Ident({})", literal),
             Token::Int(literal) => write!(f, "Int({})", literal),
-            _ => write!(f, "\"{:?})\"", &self.to_string())
+            _ => write!(f, "\"{:?})\"", &self.to_string()),
         }
     }
 }
