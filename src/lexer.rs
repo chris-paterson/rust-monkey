@@ -4,7 +4,7 @@ pub struct Lexer<'a> {
     input: &'a str,
     position: usize,      // Current position in input.
     read_position: usize, // Current reading position in input (after current char).
-    ch: char,             // Current char being looked at.
+    ch: Option<char>,     // Current char being looked at.
 }
 
 impl<'a> Lexer<'a> {
@@ -13,7 +13,7 @@ impl<'a> Lexer<'a> {
             input: input,
             position: 0,
             read_position: 0,
-            ch: '0',
+            ch: None,
         };
 
         lexer.read_char();
@@ -22,9 +22,9 @@ impl<'a> Lexer<'a> {
 
     fn read_char(&mut self) {
         if self.read_position >= self.input.len() {
-            self.ch = '0';
+            self.ch = None;
         } else {
-            self.ch = self.input.chars().nth(self.read_position).unwrap();
+            self.ch = self.input.chars().nth(self.read_position);
         }
 
         self.position = self.read_position;
@@ -35,7 +35,7 @@ impl<'a> Lexer<'a> {
         self.skip_whitespace();
 
         let token = match self.ch {
-            '=' => {
+            Some('=') => {
                 if self.peek_char() == '=' {
                     self.read_char();
                     Token::Eq
@@ -43,9 +43,9 @@ impl<'a> Lexer<'a> {
                     Token::Assign
                 }
             }
-            '+' => Token::Plus,
-            '-' => Token::Minus,
-            '!' => {
+            Some('+') => Token::Plus,
+            Some('-') => Token::Minus,
+            Some('!') => {
                 if self.peek_char() == '=' {
                     self.read_char();
                     Token::NotEq
@@ -53,27 +53,27 @@ impl<'a> Lexer<'a> {
                     Token::Bang
                 }
             }
-            '/' => Token::Slash,
-            '*' => Token::Asterisk,
-            '<' => Token::Lt,
-            '>' => Token::Gt,
-            ';' => Token::Semicolon,
-            ',' => Token::Comma,
-            '(' => Token::LParen,
-            ')' => Token::RParen,
-            '{' => Token::LBrace,
-            '}' => Token::RBrace,
-            '0' => Token::EOF,
-            _ => {
-                if self.ch.is_alphabetic() {
+            Some('/') => Token::Slash,
+            Some('*') => Token::Asterisk,
+            Some('<') => Token::Lt,
+            Some('>') => Token::Gt,
+            Some(';') => Token::Semicolon,
+            Some(',') => Token::Comma,
+            Some('(') => Token::LParen,
+            Some(')') => Token::RParen,
+            Some('{') => Token::LBrace,
+            Some('}') => Token::RBrace,
+            Some(ch @ _) => {
+                if ch.is_alphabetic() {
                     let literal = self.read_identifier();
                     return Token::lookup_ident(&literal);
-                } else if self.ch.is_numeric() {
+                } else if ch.is_numeric() {
                     return Token::Int(self.read_number());
                 } else {
                     Token::Illegal
                 }
             }
+            None => Token::EOF,
         };
 
         self.read_char();
@@ -81,7 +81,10 @@ impl<'a> Lexer<'a> {
     }
 
     fn skip_whitespace(&mut self) {
-        while self.ch.is_whitespace() {
+        while match self.ch {
+            Some(ch) => ch.is_whitespace(),
+            _ => false,
+        } {
             self.read_char();
         }
     }
@@ -96,8 +99,12 @@ impl<'a> Lexer<'a> {
 
     fn read_identifier(&mut self) -> String {
         let position = self.position;
-        while self.ch.is_alphabetic() {
-            self.read_char()
+
+        while match self.ch {
+            Some(ch) => ch.is_alphabetic(),
+            _ => false,
+        } {
+            self.read_char();
         }
 
         self.input[position..self.position].to_owned()
@@ -105,8 +112,12 @@ impl<'a> Lexer<'a> {
 
     fn read_number(&mut self) -> String {
         let position = self.position;
-        while self.ch.is_numeric() {
-            self.read_char()
+
+        while match self.ch {
+            Some(ch) => ch.is_numeric(),
+            _ => false,
+        } {
+            self.read_char();
         }
 
         self.input[position..self.position].to_owned()
