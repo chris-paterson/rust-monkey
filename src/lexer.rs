@@ -1,26 +1,26 @@
 use crate::token::Token;
 
-pub struct Lexer<'a>  {
+pub struct Lexer<'a> {
     input: &'a str,
-    position: usize, // Current position in input.
+    position: usize,      // Current position in input.
     read_position: usize, // Current reading position in input (after current char).
-    ch: char, // Current char being looked at.
+    ch: char,             // Current char being looked at.
 }
 
 impl<'a> Lexer<'a> {
     pub fn new(input: &str) -> Lexer {
         let mut lexer = Lexer {
-           input: input,
-           position: 0,
-           read_position: 0,
-           ch: '0',
+            input: input,
+            position: 0,
+            read_position: 0,
+            ch: '0',
         };
 
         lexer.read_char();
         lexer
     }
 
-    fn read_char(&mut self) { 
+    fn read_char(&mut self) {
         if self.read_position >= self.input.len() {
             self.ch = '0';
         } else {
@@ -35,21 +35,21 @@ impl<'a> Lexer<'a> {
         self.skip_whitespace();
 
         let token = match self.ch {
-            '=' =>  Token::Assign,
-            ';' =>  Token::Semicolon,
-            '(' =>  Token::LParen,
-            ')' =>  Token::RParen,
-            ',' =>  Token::Comma,
-            '+' =>  Token::Plus,
-            '{' =>  Token::LBrace,
-            '}' =>  Token::RBrace,
-            '0' =>  Token::EOF,
+            '=' => Token::Assign,
+            ';' => Token::Semicolon,
+            '(' => Token::LParen,
+            ')' => Token::RParen,
+            ',' => Token::Comma,
+            '+' => Token::Plus,
+            '{' => Token::LBrace,
+            '}' => Token::RBrace,
+            '0' => Token::EOF,
             _ => {
-                if is_letter(self.ch) {
+                if self.ch.is_alphabetic() {
                     let literal = self.read_identifier();
-                    Token::lookup_ident(&literal)
+                    return Token::lookup_ident(&literal);
                 } else if self.ch.is_numeric() {
-                    Token::Int(self.read_number())
+                    return Token::Int(self.read_number());
                 } else {
                     Token::Illegal
                 }
@@ -65,10 +65,10 @@ impl<'a> Lexer<'a> {
             self.read_char();
         }
     }
-    
+
     fn read_identifier(&mut self) -> String {
         let position = self.position;
-        while is_letter(self.ch) {
+        while self.ch.is_alphabetic() {
             self.read_char()
         }
 
@@ -83,10 +83,6 @@ impl<'a> Lexer<'a> {
 
         self.input[position..self.position].to_owned()
     }
-}
-
-fn is_letter(ch: char) -> bool {
-    ch.is_alphabetic() || ch == '_'
 }
 
 #[cfg(test)]
@@ -146,7 +142,7 @@ let result = add(five, ten);
         let mut lexer = Lexer::new(input);
         for e in expected.iter() {
             let token = lexer.next_token();
-            println!("{:?}", token); 
+            println!("{:?}", token);
             assert_eq!(e, &token, "Expected \"{:?}\" but got \"{:?}\"", e, token);
         }
     }
