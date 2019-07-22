@@ -10,7 +10,7 @@ pub struct Lexer<'a> {
 impl<'a> Lexer<'a> {
     pub fn new(input: &str) -> Lexer {
         let mut lexer = Lexer {
-            input: input,
+            input,
             position: 0,
             read_position: 0,
             ch: None,
@@ -63,7 +63,7 @@ impl<'a> Lexer<'a> {
             Some(')') => Token::RParen,
             Some('{') => Token::LBrace,
             Some('}') => Token::RBrace,
-            Some(ch @ _) => {
+            Some(ch) => {
                 if ch.is_alphabetic() {
                     let literal = self.read_identifier();
                     return Token::lookup_ident(&literal);

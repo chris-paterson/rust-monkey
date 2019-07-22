@@ -7,13 +7,13 @@ pub fn start() -> io::Result<()> {
     let stdout = io::stdout();
 
     loop {
-        stdout.lock().write(b"> ")?;
+        stdout.lock().write_all(b"> ")?;
         stdout.lock().flush()?;
 
         let mut buffer = String::new();
         stdin.lock().read_line(&mut buffer)?;
 
-        let mut lexer = Lexer::new(&mut buffer);
+        let mut lexer = Lexer::new(&buffer);
 
         loop {
             let token = lexer.next_token();
